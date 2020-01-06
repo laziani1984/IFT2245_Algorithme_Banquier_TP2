@@ -1,0 +1,110 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{blindtext}
+\usepackage{graphicx}
+\usepackage{titling}
+
+\begin{document}
+
+\title{Travail pratique \#1 - (IFT2245)} 
+
+\author{Wa\"{e}l ABOU ALI (p20034365)}
+%\textsrc{\LARGE DÉPARTEMENT D’INFORMATIQUE ET DE RECHERCHE OPÉRATIONNELLE \\
+%FACULTÉ DES ARTS ET DES SCIENCES
+ %}
+%\textsrc{\LARGE TRAVAIL PRÉSENTÉ À LIAM PAULL \\
+%\\DANS LE CADRE DU COURS \\SYSTÈMES D’EXPLOITATION
+ %}
+\date{\today}
+
+\begin{titlingpage}
+%\textsc{\LARGE UNIVERSITÉ DE MONTRÉAL}
+\maketitle
+
+\end{titlingpage}
+
+
+
+
+
+
+%\section{Rapport}
+
+\section{Niveau personnel}
+
+\paragraph{En bref, comme dans le premier tp, j'ai décidé de faire le tp seul puisque j'ai jamais trouvé quelqu'un pour m'aider à faire le tp. Mais pour celui-là, je vois que c'était vraiment un défis pour le compléter en essayant de régler les erreurs que j'avais au premier tp. Au premier tp, j'avais des erreurs concernant l'allocation mémoire qui sont presque disparu jusqu'au moment dans celui-là. Le deuxième défis était de bien utiliser les sockets, de savoir comment les gérer et comment synchroniser le modèle envoi-reçu entre client et serveur. Le deuxième défi nous améne déjà au troisième défi à résoudre dans ce tp, "Les conditions de course", et l'utilisation des mutexes et sémaphores.\newline À mon avis, le tp était amusant mais ça m'a pris beaucoup de temps et stress "biensûr" pour le terminer à temps.}
+
+\section{Difficultés}
+\begin{enumerate}
+\item Allocation mémoire.
+\item Mutexes et sémaphore.
+\item Gestion des sockets et les message à envoyer "client-serveur".
+\item Algorithme de banquier et comment créer un ordonnaceur pour gérer les requêtes envoyées par le client et comment choisir entre eux.
+\end{enumerate}
+
+\paragraph{1. Je pense que j'ai bien appris l'importance de l'allocation mémoire après le premier tp. J'ai essayé de régler les allocations mémoires dans chaque étape pour ne pas avoir des problèmes à la fin du tp à faire les différentes recherches pour vérifier les "memory leaks" que j'ai dans mon programme. Pour le serveur, même avec l'application de "SIGINT" pour faire une sortie prematuré du programme, le valgrind n'affiche pas des erreurs à la gestion de l'espace mémoire.\newline Pour le client, j'ai essayé de trouver une solution pour l'erreur que j'ai au moment de la sortie prematuré mais j'ai pas réussi à la trouver.}
+
+\paragraph{2. À mon avis, la partie des mutexes et sémaphores était le moment de joie dans ce tp. L'application des conditions de course pour incrémenter ou décrémenter les variables globales qui représentent le nombre des requêtes traitées, en attentes, invalides ou terminées et les avoir bien synchronisées entre le client et le serveur. L'application des mutexes et sémaphores d'une bonne manière va garantir que les résultats affichés à partir du côté client sera identiques à ceux du serveur. Ce concept est très important puisque c'est la partie responsable de gérer la communication et la synchronisation dans notre modèle "Client-Server".}
+
+\paragraph{3. Comme j'ai précédemment indiqué, le deuxième point va nous amener au troisième. Le troisième point se concerne des sockets, comment les gérer et comment les utiliser pour avoir des canaux entre le client et le serveur. Ces canaux "pipes" sont responsables à transferer les messages entre ces deux parties. Dans notre modèle, "Datagram", les commandes responsables à transferer les messages entre ces deux parties sont "send", "recv" à partir d'un socket X(integer) ou un pointeur vers un tel fichier(FILE) et "fprintf", "fflush" pour lecture et écriture dans ce fichier. Au début, j'étais un peu incertain et j'avais un peu de la crainte à comment l'utiliser mais ce sentiment est disparu dès que j'ai commencé à les utiliser. Je les ai bien aimé aussi.}
+
+\paragraph{4. Le quatrième point représente l'algorithme du tp, l'application l'algorithme du banquier dans ce tp pour traiter les requêtes en séquence selon la disponibilité des ressources, comment les enlever de l'ordonnanceur des requêtes et comment les manipuler dans les différents cas. Si la requête est accepté donc l'ordonnanceur va l'enlever de la ligne "dispatcher", ce qui indique que la requête est terminé en libérant les ressources qu'elle possède. Si la requête a besoin des ressources dont la disponibilité est absente, alors l'ordonnaceur va l'enlever de la séquence pour un temps spécifié qui représente une petite attente et dès que le temps se termine, la requête sera renvoyée au serveur pour la re-vérifier. Le troisième cas est si la requête est invalide selon le nombre des ressources allouées ou demandées qui dépasse déjà la limite maximale des ressources(max). Les trois cas sont représentables par "ACK -- Acknowledged (4)", "WAIT -- en attente (5)" ou "ERR -- erreur (8)".}
+
+\paragraph{5. Un cinquième point que j'essaye pour l'instant à trouver sa solution est de comment trouver une méthode pour fermer et re-ouvrir la connection à partir d'un message de wait envoyé pour indiquer que le thread mis en wait va renvoyer sa requête une autre fois lorsqu'il est mis en attente. J'essaye à trouver une solution que ne cause pas un deadlock dans mon programme.}
+
+\section{Les surprises}
+\paragraph{Selon mon avis personnel, je n'ai pas vu des grandes surprises dans ce tp sauf celle de la fermeture prématuré du client puisque j'ai envoyé un signal au serveur avec un signalhandler qui est responsable de fermer toutes les connections entre client et serveur. À part de ça, je n'ai pas rencontré des surprises dans ce tp.}
+
+
+\section{Les choix}
+\paragraph{Dans cette section, j'en ai beaucoup des choses à décrire. Mon premier choix était d'utiliser un parseur qui traduisait les messages envoyées ou reçues comme chaîne des caractères en séquence numérique en utilisant "atoi". Ce choix m'a garanti une limitation à la création des tableaux et donc à minimiser les allocations mémoires. }
+
+\paragraph{La création d'un ordonnaceur qui reçoit les requêtes dans mon serveur était le plus grand défi que j'ai rencontré dans ce tp. Au début, j'ai choisi de lier les données de chacun des threads au thread lui-même, mais ce choix m'a causé des problèmes au moment où j'ai commencé à coder l'algorithme du banquier puisque j'avais besoin d'un arraylist qui contient tous les threads envoyés au serveur. Si le thread est mis "en attente", le serveur devrait l'enlever de la liste, changer son statut à "en attente" jusqu'au temps qu'il serait reveillé. L'ordonnanceur va itérer sur cette liste pour vérifier s'il y en a des threads qui sont mis en "sleep" avant de terminer l'exécution du programme. Au cas où, il a trouvé des threads à traiter, il va attendre jusqu'au moment qu'il prend une décision finale concernant ces threads soit en les exécutant ou en les terminant avec un code d'erreur.}
+
+\section{Les points de force et faiblesse (à faire)}
+\paragraph{\textbf{Les points de force :}}
+\begin{itemize}
+\item Parser les commandes reçues en messages.
+\item Établir une liaison entre serveur et client.
+\item Simuler le fonctionnement d'un système d'exploitation en échangeant les différentes requêtes selon besoin.
+\item La gestion mémoire est presque parfaite puisque le système libère toute la mémoire avant de terminer son exécution.
+\item À faire si je termine l'algo banquier.
+\end{itemize} 
+
+\paragraph{\textbf{Les points de faiblesse :}}
+\begin{itemize}
+\item Le seul point de faiblesse est celui concernant la sortie prématuré du client puisque valgrind m'affiche un seul code d'erreur avec 2 blocks mémoire qui ne sont pas perdus mais ne sont pas libérés avant de quitter le programme.
+\item Si l'algo n'est pas terminé.
+\end{itemize}
+
+\section{Comment ça fonctionne?}
+\paragraph{L'idée de ce programme est différente de celle du premier tp. Ce programme est formé de deux parties dont chacune est basée sur le principe "read-parse-execute". Ces deux parties sont liées ensemble par des sockets responsable d'échanger les messages entre eux. Donc le diagramme simplifié sera comme ce qui suit :\newline\textbf{"Read-parse-execute" \textless - - - - "Connection via socket" - - - - \textgreater "Read-parse-execute"}.}
+\begin{itemize}
+\item{\textbf{Partie "client" :}}\newline
+\begin{enumerate}
+\item \textbf{Initialisation de la partie client :}\newline Init\_client ou init\_clien\_rng(qui permet d'avoir le nombre de client comme étant le rng)(qui initialise la connection entre le client et le serveur) - - - \textgreater open\_connection(responsable d'établir la connection entre client et serveur) et initialise les listes qui vont contenir les valeurs des ressources et le sémaphore qui sera utilisé pour éviter les conditions de course. et elle ferme la connection avec serveur. - - - \textgreater ct\_init(qui représente le main pour chacun des threads).
+\item \textbf{Initialisation des threads clients(cts) :}\newline Ces cts vont envoyer des requêtes à traiter chacun par les fonction ct\_init et ct\_create\_and\_start.
+\item \textbf{La libération des allocations mémoire :}\newline À l'aide de ct\_wait\_server.
+\item \textbf{Les fonctions responsables à imprimer les données :}\newline La fonction print\_data va afficher les données actuelles reçues par le serveur comme client\_id , nb\_args et la commande envoyée.\newline St\_print\_results est responsable à afficher les résultas finaux du traîtment des threads. 
+\end{enumerate}
+\item{\textbf{Partie "Serveur" :}}\newline
+\begin{enumerate}
+\item \textbf{Initialisation de la partie client :}\newline
+\item \textbf{Fonctions de traitement des commandes :}\newline La fonction *st\_code c'est la fonction qui gère les autres fonctions (BEGIN, CONF, ...) par un switch à l'aide de numéro de la commande dans la liste enumérée créée. 
+\item \textbf{Gestion de réponses(ACK, ERR, WAIT) :}\newline Les fonctions send\_err, \_wait et \_ack sont responsables à envoyer les réponses sur les requêtes envoyées pas les clients en indiquant si c'était accepté(ACK), refusé(ERR) ou en attente(WAIT).
+\item \textbf{Fonctions de comparaisons :}\newline La fonction safe\_state c'est la fonction qui représente l'algorithme de banquier dans mon code, les fonction : \textbf{handle\_req : }(possède un model binaire dont le mode 0 indique une allocation de mémoire et une libération de mémoire si le mode est 1). \textbf{requested\_more\_needed : }(pour vérifier si les ressources à allouer sont suffisantes ou pas). \textbf{is\_empty : }(Vérifie si le client est déjà initialisé ou pas) et \textbf{*find\_clients : }(pour chercher si le client passé en paramètre avec son id est déjà dans la liste ou pas).\newline   
+\item \textbf{Les fonctions de traitement des allocations mémoires :}\newline La fonction st\_signal va libérer les allocations mémoires créées par malloc ou calloc et détruire les mutexes et sémaphores créés.\newline Free\_ct\_structs va libérer la liste des ct\_structs créée et libérer chacun des ses items, les listes dedans.
+\item \textbf{Les fonctions responsables à imprimer les données :}\newline La fonction print\_server\_data va afficher les données actuelles reçues par le serveur comme server\_id , nb\_args et la commande envoyée.\newline St\_print\_results est responsable à afficher les résultas finaux du traîtment des threads.
+\end{enumerate}
+\end{itemize} 
+\section{Références}
+\textbf{J'ai inspiré des parties de mon code à partir d'autres codes dont je vais les mentionner avec mes ressources puisque ils m'ont beaucoup aider à mieux comprendre le codage en C et la matière en général.}
+\begin{enumerate}
+\item{https://github.com/jc305697/tp2-IFT2245}
+\item{https://www.geeksforgeeks.org/socket-programming-cc/}
+\item{https://github.com/jonrohan/client-server/blob/master/server.c}
+\item{https://gist.github.com/browny/5211329}
+\item{https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/}
+\end{enumerate} 
+\end{document}
